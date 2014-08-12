@@ -5,31 +5,82 @@
  * this file and include it in basic-server.js so that it actually works.
  * *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html. */
 
-var handleRequest = function(request, response) {
+var exports = module.exports = {};
+
+var data = {
+  results: []
+};
+
+// data.results[0] = {
+//   createdAt: Date.now(),
+//   roomname: "Lobby",
+//   text: "Hi there",
+//   // updatedAt: "2014-08-12T00:08:27.158Z",
+//   username: "hg"
+// }
+
+// data.results[1] = {
+//   createdAt: Date.now(),
+//   roomname: "Lobby",
+//   text: "Hi there again",
+//   // updatedAt: "2014-08-12T00:08:27.158Z",
+//   username: "cw"
+// }
+
+exports.handleRequest = function(request, response) {
   /* the 'request' argument comes from nodes http module. It includes info about the
   request - such as what URL the browser is requesting. */
 
   /* Documentation for both request and response can be found at
    * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html */
 
-  console.log("Serving request type " + request.method + " for url " + request.url);
-
   var statusCode = 200;
+  var headers = exports.defaultCorsHeaders;
+  headers['Content-Type'] = "text/plain";
 
   /* Without this line, this server wouldn't work. See the note
    * below about CORS. */
-  var headers = defaultCorsHeaders;
 
-  headers['Content-Type'] = "text/plain";
+  console.log("Serving request type " + request.method + " for url " + request.url);
+  console.log('Incoming request from: ' + request.connection.remoteAddress)
 
-  /* .writeHead() tells our server what HTTP status code to send back */
-  response.writeHead(statusCode, headers);
+  if (request.method === "GET" || request.method === "OPTIONS" && request.url == "/classes/messages") {
+    response.writeHead(404, headers);
+    response.end(JSON.stringify(data));
+  }
+
+
+  if (request.method === "POST" && request.url == "/classes/messages") {
+    console.log("[200] " + request.method + " to " + request.url);
+
+    var final_message = '';
+
+    request.on('data', function( recieved_message_object ) {
+      console.log("Received body data:");
+      console.log( recieved_message_object );
+      final_message += recieved_message_object;
+    });
+
+    request.on('end', function() {
+      data.results.push( JSON.parse( final_message ) );
+      console.log(JSON.parse(final_message));
+      response.writeHead(201, headers);
+      response.end();
+    })
+    /* .writeHead() tells our server what HTTP status code to send back */
+    // response.end(JSON.stringify(data));
+
+  }
+  else{
+    response.writeHead(404, headers);
+    response.end();
+  }
 
   /* Make sure to always call response.end() - Node will not send
    * anything back to the client until you do. The string you pass to
    * response.end() will be the body of the response - i.e. what shows
    * up in the browser.*/
-  response.end("Hello, World!");
+
 };
 
 /* These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -37,9 +88,14 @@ var handleRequest = function(request, response) {
  * are on different domains. (Your chat client is running from a url
  * like file://your/chat/client/index.html, which is considered a
  * different domain.) */
-var defaultCorsHeaders = {
+exports.defaultCorsHeaders = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+
+
+
+
