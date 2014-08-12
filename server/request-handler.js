@@ -38,19 +38,18 @@ exports.handleRequest = function(request, response) {
   var headers = exports.defaultCorsHeaders;
   headers['Content-Type'] = "text/plain";
 
-  /* Without this line, this server wouldn't work. See the note
-   * below about CORS. */
 
   console.log("Serving request type " + request.method + " for url " + request.url);
-  console.log('Incoming request from: ' + request.connection.remoteAddress)
+  // console.log('Incoming request from: ' + request.connection.remoteAddress)
+  var urlCheck = request.url.toString().split("").slice(0, 8).join("");
+  console.log( urlCheck );
 
-  if (request.method === "GET" || request.method === "OPTIONS" && request.url == "/classes/messages") {
-    response.writeHead(404, headers);
+  if ( (request.method === "GET" || request.method === "OPTIONS") && (urlCheck === "/classes" ) ){
+    response.writeHead(statusCode, headers);
     response.end(JSON.stringify(data));
   }
 
-
-  if (request.method === "POST" && request.url == "/classes/messages") {
+  else if (request.method === "POST" && urlCheck === "/classes") {
     console.log("[200] " + request.method + " to " + request.url);
 
     var final_message = '';
@@ -71,15 +70,15 @@ exports.handleRequest = function(request, response) {
     // response.end(JSON.stringify(data));
 
   }
+
+  else if( urlCheck === "/classes" ){
+    response.writeHead(200, headers);
+    response.end();
+  }
   else{
     response.writeHead(404, headers);
     response.end();
   }
-
-  /* Make sure to always call response.end() - Node will not send
-   * anything back to the client until you do. The string you pass to
-   * response.end() will be the body of the response - i.e. what shows
-   * up in the browser.*/
 
 };
 

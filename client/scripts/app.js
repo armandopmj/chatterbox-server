@@ -38,7 +38,7 @@ $(function() {
 
       // POST the message to the server
       $.ajax({
-        url: app.server + "send",
+        url: app.server + "classes/messages",
         type: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json',
@@ -54,7 +54,7 @@ $(function() {
     },
     fetch: function(animate) {
       $.ajax({
-        url: app.server,
+        url: app.server + "classes/messages",
         type: 'GET',
         contentType: 'application/json',
         // data: { order: '-createdAt'},
